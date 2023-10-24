@@ -1,0 +1,324 @@
+[gd_scene load_steps=5 format=3 uid="uid://idk"]
+
+[ext_resource type="FontFile" path="res://assets/fonts/cloisterblack-webfont.woff2" id="dborw"]
+[ext_resource type="Script" path="res://flex-column-glas--left-margin.gd" id="iegge"]
+[ext_resource type="Script" path="res://flex-column-glas--right-margin.gd" id="lotpw"]
+[ext_resource type="Script" path="res://flex-container-other-margin.gd" id="qymcu"]
+
+
+[node name="HtmlNode" type="ScrollContainer" ]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 2
+
+[node name="body" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="navbar" type="HBoxContainer" parent="body"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="div" type="VBoxContainer" parent="body/navbar"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="richtext-mpstj" type="RichTextLabel" parent="body/navbar/div"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "[h1]Wizard Woes[/h1]"
+
+[node name="h1-ywyyy" type="RichTextLabel" parent="body/navbar/div/richtext-mpstj"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "Wizard Woes"
+fontfile = ExtResource("dborw")
+
+[node name="navbar__entries" type="HBoxContainer" parent="body/navbar"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="navbar__entry-margin" type="MarginContainer" parent="body/navbar/navbar__entries"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="navbar__entry" type="VBoxContainer" parent="body/navbar/navbar__entries/navbar__entry-margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="richtext-epwik" type="RichTextLabel" parent="body/navbar/navbar__entries/navbar__entry-margin/navbar__entry"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "glas"
+
+[node name="navbar__entry-margin-qnbrc" type="MarginContainer" parent="body/navbar/navbar__entries"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="navbar__entry" type="VBoxContainer" parent="body/navbar/navbar__entries/navbar__entry-margin-qnbrc"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="richtext-wpodm" type="RichTextLabel" parent="body/navbar/navbar__entries/navbar__entry-margin-qnbrc/navbar__entry"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "reading list"
+
+[node name="navbar__entry-margin-lcghd" type="MarginContainer" parent="body/navbar/navbar__entries"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="navbar__entry" type="VBoxContainer" parent="body/navbar/navbar__entries/navbar__entry-margin-lcghd"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="richtext-wbdkc" type="RichTextLabel" parent="body/navbar/navbar__entries/navbar__entry-margin-lcghd/navbar__entry"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "citations"
+
+[node name="navbar__entry-margin-yglzo" type="MarginContainer" parent="body/navbar/navbar__entries"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="navbar__entry" type="VBoxContainer" parent="body/navbar/navbar__entries/navbar__entry-margin-yglzo"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="richtext-xrzzw" type="RichTextLabel" parent="body/navbar/navbar__entries/navbar__entry-margin-yglzo/navbar__entry"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "reagents"
+
+[node name="navbar__entry-margin-pjwvr" type="MarginContainer" parent="body/navbar/navbar__entries"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="navbar__entry" type="VBoxContainer" parent="body/navbar/navbar__entries/navbar__entry-margin-pjwvr"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="richtext-aobff" type="RichTextLabel" parent="body/navbar/navbar__entries/navbar__entry-margin-pjwvr/navbar__entry"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "weaves"
+
+[node name="navbar__entry-margin-bkrup" type="MarginContainer" parent="body/navbar/navbar__entries"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="navbar__entry" type="VBoxContainer" parent="body/navbar/navbar__entries/navbar__entry-margin-bkrup"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="richtext-nwqml" type="RichTextLabel" parent="body/navbar/navbar__entries/navbar__entry-margin-bkrup/navbar__entry"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "jira"
+
+[node name="navbar__entry-margin-gefpy" type="MarginContainer" parent="body/navbar/navbar__entries"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="navbar__entry" type="VBoxContainer" parent="body/navbar/navbar__entries/navbar__entry-margin-gefpy"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="richtext-xutqr" type="RichTextLabel" parent="body/navbar/navbar__entries/navbar__entry-margin-gefpy/navbar__entry"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "twine"
+
+[node name="navbar__entry-margin-xyjmg" type="MarginContainer" parent="body/navbar/navbar__entries"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="navbar__entry" type="VBoxContainer" parent="body/navbar/navbar__entries/navbar__entry-margin-xyjmg"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="richtext-kgfcp" type="RichTextLabel" parent="body/navbar/navbar__entries/navbar__entry-margin-xyjmg/navbar__entry"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "video"
+
+[node name="content" type="VBoxContainer" parent="body"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="flex-container" type="VBoxContainer" parent="body/content"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="flex-container-content" type="HBoxContainer" parent="body/content/flex-container"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="flex-column-glas--left-margin" type="MarginContainer" parent="body/content/flex-container/flex-container-content"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("iegge")
+
+[node name="flex-column-glas--left" type="VBoxContainer" parent="body/content/flex-container/flex-container-content/flex-column-glas--left-margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="richtext-mxmxn" type="RichTextLabel" parent="body/content/flex-container/flex-container-content/flex-column-glas--left-margin/flex-column-glas--left"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "This is a transitional point of view, the result of a situation in which theory is still not sufficiently removed from practice – not sufficiently specialised – to be able to live a completely separate, independent life. Practical people will always be ‘naïve realists’, i.e. they accept that objects are precisely as they are seen, perceived, and, in general, apprehended. The fetishism of naïve realism consists in that it considers the object to exist in such a form completely independently of any human practice. The naïve realist supposes that the object[i]in itself[/i]is, for example, ‘quadrangular’, ‘two yards long’, ‘weighing three pounds’, and does not understand that all these ‘properties’ can in no way belong to the object ‘in itself’. Humanity, in its labour experience over millennia, had to work out methods of comparing and defining forms, measurement, and weight, in order to make ‘quadrangles’, ‘yards’, ‘pounds’, etc. possible. In nature itself – in the instances of elemental resistance which labouring effort comes up against – there are no such things, nor can there be. They are the result of the activity of humanity in overcoming, changing, forming, and organising these resistances. In the hands of fetishists – theoreticians who lock themselves up in their studies and whose narrow specialties have almost nothing to do with the resistance of material objects – this distortion develops further. Their sense of isolation from material objects and their sense of the ‘independence’ of material objects are considerably deeper. They believe that such objects not only exist independently from themselves but that they are so independent as to be completely inaccessible to their minds; only their ‘outward appearance’ is accessible – masks which they put on before the observer. And a feeling of their individual powerlessness – their personal passivity in relation to the external world – reinforces in them the conviction that this ‘outward appearance’ is entirely the result of[i]the object’s[/i]action on them, that they themselves only ‘apprehend’ that action."
+
+[node name="citation" type="RichTextLabel" parent="body/content/flex-container/flex-container-content/flex-column-glas--left-margin/flex-column-glas--left"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "Bogdanov, Alexander.[i]The Philosophy of Living Experience[/i]. Haymarket Books, 2016."
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="flex-column-glas--right-margin" type="MarginContainer" parent="body/content/flex-container/flex-container-content"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("lotpw")
+
+[node name="flex-column-glas--right" type="VBoxContainer" parent="body/content/flex-container/flex-container-content/flex-column-glas--right-margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="richtext-eoyan" type="RichTextLabel" parent="body/content/flex-container/flex-container-content/flex-column-glas--right-margin/flex-column-glas--right"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "The violence and insecurity in which we live—as much as they are exploited to the point of fantasy, or even deliberately manipulated—engage above all a question of narcissism, and result from a process of loss of individuation. It is a matter of narcissism in the sense of someone like Richard Durn, assassin of a[i]we[/i]—to assassinate members of a municipal council, the official representatives of a[i]we[/i], is to assassinate a[i]we[/i]—who suffered terribly from not existing, from not having, he said, a “feeling of existing.” When he looked in the mirror he saw only an immense nothing. This was revealed by the publication of his personal diary in[i]Le Monde[/i]. Durn affirmed that he had a need to “do evil at least once in his life, to have the feeling of existing.”"
+
+[node name="richtext-xambh" type="RichTextLabel" parent="body/content/flex-container/flex-container-content/flex-column-glas--right-margin/flex-column-glas--right"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "Richard Durn suffered from a[i]structural privation of his primordial narcissistic capacities[/i]. I call “primordial narcissism” that structure of the psyche which is indispensable for functioning, that part of self-love which can sometimes become pathological, but without which any capacity for love would be impossible. Freud speaks of primary narcissism, but that is not what I am referring to. Primary narcissism designates infantile self-love, a precocious phase of sexuality. Freud also speaks of secondary narcissism, which survives into adulthood, but this is still not primordial narcissism, which is without doubt closer to what Lacan calls the “mirror phase."
+
+[node name="richtext-zzoxh" type="RichTextLabel" parent="body/content/flex-container/flex-container-content/flex-column-glas--right-margin/flex-column-glas--right"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "Now, there is a primordial narcissism[i]of the we just as there is of the I[/i]: for the narcissism of my[i]I[/i]to function, there must be a narcissism of the[i]we[/i]onto which it can project itself. Richard Durn, failing to develop his narcissism, saw in the municipal council the reality of an alterity that made him suffer, that did not return to him any image, and he massacred it."
+
+[node name="citation" type="RichTextLabel" parent="body/content/flex-container/flex-container-content/flex-column-glas--right-margin/flex-column-glas--right"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "Stiegler, Bernard.[i]Acting Out[/i]. Stanford University Press, 2009."
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="flex-container-other-margin" type="MarginContainer" parent="body/content/flex-container"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("qymcu")
+
+[node name="flex-container-other" type="VBoxContainer" parent="body/content/flex-container/flex-container-other-margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="next-prev-wrap-margin" type="MarginContainer" parent="body/content"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 25
+
+[node name="next-prev-wrap" type="VBoxContainer" parent="body/content/next-prev-wrap-margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="richtext-lardd" type="RichTextLabel" parent="body/content/next-prev-wrap-margin/next-prev-wrap"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "previous"
+
+[node name="richtext-qnwui" type="RichTextLabel" parent="body/content/next-prev-wrap-margin/next-prev-wrap"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+text = "next"
+
