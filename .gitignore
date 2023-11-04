@@ -1,4 +1,7 @@
 gdscripts/
+godot_output/
+src_html/
+notes.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

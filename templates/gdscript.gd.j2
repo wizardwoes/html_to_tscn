@@ -1,0 +1,22 @@
+{% macro render_function(function) -%}
+func {{function.name}}():
+{% for line in function.code  %}
+    {{line}}
+{% endfor %}
+{%- endmacro %}
+
+{% block script_header %}
+extends {{script.source}}
+{% endblock script_header %}
+
+{% block variables %}
+{% for k,v in script.onready.items()  %}
+@onready var {{k}} = {{v}}
+{% endfor %}
+{% endblock variables %}
+
+{% block functions %}
+{% for k,v in script.funcs.items()  %}
+{{ render_function(script.funcs.get(k)) }}
+{% endfor %}
+{% endblock functions %}

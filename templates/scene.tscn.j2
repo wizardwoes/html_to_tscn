@@ -1,0 +1,48 @@
+{% macro render_node_properties(properties) -%}
+{% for key, value in properties.items() %}
+{{ key }} = {{ value }}
+{% endfor %}
+{%- endmacro %}
+
+{% macro render_node_resource(resource) -%}
+{{resource.type.lower()}} = ExtResource("{{resource.id}}")
+{%- endmacro %}
+
+{% macro render_node_resources(resources) -%}
+{% for resource in resources %}
+{{render_node_resource(resource)}}
+{% endfor %}
+{%- endmacro %}
+
+{% macro render_node_header(resource_type, name, type, parent_path) -%}
+[{{resource_type}} name="{{name}}" type="{{type}}" {{ "parent=\"{}\"".format(parent_path) if parent_path }}]
+{%- endmacro %}
+
+{% block file_descriptor %}
+[{{fd.resource_type}} load_steps={{fd.load_steps}} format=3 uid="uid://{{fd.uid}}"]
+{% endblock file_descriptor %}
+
+{% block external_resources %}
+{% for resource in ext_resource %}
+[{{resource.resource_type}} type="{{resource.type}}" path="{{resource.path_str}}" id="{{resource.id}}"]
+{% endfor %}
+{% endblock external_resources %}
+
+{% block nodes %}
+{% for node in nodes %}
+{{ render_node_header(node.resource_type, node.name, node.type, node.parent_path_str) }}
+{% if node.properties %}
+{{ render_node_properties(node.renderable_properties()) -}}
+{% endif %}
+{% if node.resources %}
+{{ render_node_resources(node.resources) }}
+{% endif %}
+{% if node.script %}
+{{ render_node_resource(node.script) }}
+{% endif %}
+
+{% endfor %}
+{% endblock nodes %}
+
+{% block connections %}
+{% endblock connections %}
