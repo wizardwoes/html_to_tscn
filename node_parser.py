@@ -1,11 +1,7 @@
 from dataclasses import dataclass
 from urllib.parse import urlparse
-from pathlib import Path
-from bs4 import BeautifulSoup
-import css_inline
 
 from tag_token import Token, TagCategory
-from scanner import HtmlScanner
 from godot import (
     NodeGodot,
     ConnectionGodot,
@@ -14,7 +10,6 @@ from godot import (
     ExtResourceGodot,
     Texture2DGodot,
     FontFileGodot,
-    SceneGodot,
 )
 
 
