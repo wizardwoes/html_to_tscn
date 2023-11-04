@@ -443,7 +443,6 @@ class Parser:
             # need to handle if an internal link vs a real external link
 
             link_attrs = self.link_attributes()
-            print("what are they", link_attrs)
 
             link_prop = {"unique_name_in_owner": True, "size_flags_horizontal": 0}
             # this could be done better
@@ -456,7 +455,6 @@ class Parser:
                 case {"name": _ as name}:
                     node = LinkButton(name, properties=link_prop)
 
-            print("node", node)
             for child in self.if_children_make_nodes():
                 if child_text := child.properties.get("text"):
                     node.properties["text"] = child_text
@@ -468,7 +466,6 @@ class Parser:
                     # set up the connection, can probably be refactored
                     connection_path = f"{node.name}".replace("-", "_")
                     method_name = f"_{connection_path}_on_button_pressed"
-                    print("method", method_name)
 
                     # make the "_ready" function
                     # so we can cheat and make these unique names

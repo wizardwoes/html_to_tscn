@@ -7,7 +7,8 @@ import css_inline
 from scanner import HtmlScanner
 
 # need a better way of doing collect_ext_resources, collect_node_scripts
-from node_parser import Parser, SceneWriter, collect_ext_resources, collect_node_scripts
+from node_parser import Parser
+from render_godot import SceneWriter
 
 from godot import (
     NodeGodot,
@@ -22,7 +23,6 @@ arg_parser.add_argument("--outdir")
 
 def main(args):
     test_doc = Path(args.src)
-    outfile = f"{test_doc.parent.stem}"
     inliner = css_inline.CSSInliner()
 
     with open(test_doc, "r", encoding="utf-8") as f:
@@ -61,18 +61,14 @@ def main(args):
     for child in nodes:
         root_node.add_child(child)
 
-    resources = collect_ext_resources(root_node, [*root_node.resources])
-    scripts = collect_node_scripts(root_node, [root_node.script])
-    resources.extend(scripts)
-
     scene = SceneGodot(root_node)
 
-    # outfile = Path("page-87.tscn")
+    outfile = f"{test_doc.parent.stem}"
     base_dir = Path(f"godot_output\glas\{outfile}")
 
     writer = SceneWriter(scene, base_dir, outfile)
-    writer.write()
-
+    writer.write_out_scene()
+    writer.write_out_resources()
 
 if __name__ == "__main__":
     args = arg_parser.parse_args()

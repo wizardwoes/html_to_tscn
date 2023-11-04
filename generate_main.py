@@ -7,8 +7,6 @@ from scanner import HtmlScanner
 # need a better way of doing collect_ext_resources, collect_node_scripts
 from node_parser import (
     Parser,
-    collect_ext_resources,
-    collect_node_scripts,
 )
 
 from render_godot import SceneWriter
