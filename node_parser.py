@@ -1,16 +1,16 @@
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
-from tag_token import Token, TagCategory
 from godot import (
-    NodeGodot,
     ConnectionGodot,
-    ScriptFunction,
-    GDScriptResource,
     ExtResourceGodot,
-    Texture2DGodot,
     FontFileGodot,
+    GDScriptResource,
+    NodeGodot,
+    ScriptFunction,
+    Texture2DGodot,
 )
+from tag_token import TagCategory, Token
 
 
 @dataclass
@@ -39,6 +39,7 @@ def make_rich_text_label(name, text, extra_properties=None):
         "layout_mode": 2,
         "bbcode_enabled": True,
         "fit_content": True,
+        "autowrap_mode": 2,
         "text": text,
     }
     if extra_properties:
@@ -383,9 +384,9 @@ class Parser:
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
 
-            if margin := self.margin_node(tk_node):
-                margin.add_child(tk_node.node)
-                return margin
+            # if margin := self.margin_node(tk_node):
+            #     margin.add_child(tk_node.node)
+            #     return margin
 
             return tk_node.node
 
@@ -400,9 +401,9 @@ class Parser:
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
 
-            if margin := self.margin_node(tk_node):
-                margin.add_child(tk_node.node)
-                return margin
+            # if margin := self.margin_node(tk_node):
+            #     margin.add_child(tk_node.node)
+            #     return margin
 
             return tk_node.node
 
@@ -417,9 +418,9 @@ class Parser:
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
 
-            if margin := self.margin_node(tk_node):
-                margin.add_child(tk_node.node)
-                return margin
+            # if margin := self.margin_node(tk_node):
+            #     margin.add_child(tk_node.node)
+            #     return margin
 
             return tk_node.node
 
@@ -436,7 +437,7 @@ class Parser:
             if margin := self.margin_node(tk_node):
                 margin.add_child(tk_node.node)
                 return margin
-
+            # tk_node.node.name = self.handle_tag_name()
             return tk_node.node
 
         if self.match(TagCategory.A):
@@ -451,6 +452,8 @@ class Parser:
                     link_prop["uri"] = uri
                     node = LinkButtonExternal("link", properties=link_prop)
                 case {"name": "", "link_name": _ as link_name}:
+                    if link_name == "":
+                        link_name = "home-page"
                     node = LinkButton(link_name, properties=link_prop)
                 case {"name": _ as name}:
                     node = LinkButton(name, properties=link_prop)
@@ -475,6 +478,10 @@ class Parser:
 
                     # make our function that we call script
                     path_to_node = link_attrs["link_path"] + link_attrs["link_name"]
+                    # hack for our homepage link class/id being empty
+                    if path_to_node == "":
+                        path_to_node = "home/home"
+
                     fragment = on_link_button_pressed_func(method_name, path_to_node)
                     # shoe-horn in our signal emitter
                     fragment.code.append("Global.on_internal_link_press.emit()")
@@ -524,9 +531,9 @@ class Parser:
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
 
-            if margin := self.margin_node(tk_node):
-                margin.add_child(tk_node.node)
-                return margin
+            # if margin := self.margin_node(tk_node):
+            #     margin.add_child(tk_node.node)
+            #     return margin
 
             return tk_node.node
 
@@ -537,25 +544,13 @@ class Parser:
             self.apply_class_options_to_node(tk_node)
             self.apply_style_to_node(tk_node)
 
-            # unjoined = []
-            # Basically need to be merge all p nodes containing text
-            # but not those containing images
-
             unjoined = []
-            # Basically need to be merge all p nodes containing text
-            # but not those containing images
             for child in self.if_children_make_nodes():
                 match child.type:
-                    # case "RichTextLabel":
-                    #     if unjoined:
-                    #         child_text = " ".join(unjoined)
-                    #         child_unjoined = make_rich_text_label("text", child_text)
-                    #         tk_node.node.add_child(child_unjoined)
-
-                    #         unjoined = []
-
-                    #     tk_node.node.add_child(child)
                     case "Label":
+                        if text := child.properties.get("text"):
+                            unjoined.append(text)
+                    case "RichTextLabel":
                         if text := child.properties.get("text"):
                             unjoined.append(text)
                     case _:
@@ -563,9 +558,8 @@ class Parser:
                             child_text = " ".join(unjoined)
                             child_unjoined = make_rich_text_label("text", child_text)
                             tk_node.node.add_child(child_unjoined)
-
                             unjoined = []
-                        
+
                         tk_node.node.add_child(child)
 
             if unjoined:
@@ -624,6 +618,7 @@ class Parser:
             properties = {
                 "layout_mode": 2,
                 "fit_content": True,
+                "autowrap_mode": 3,
                 "text": text,
             }
 
@@ -645,6 +640,9 @@ class Parser:
         name = ""
         if prev_name := self.previous().attrs.get("title"):
             name = prev_name.replace(" ", "-")
+
+        # if name is "":
+        #     name = "home-page"
 
         uri = self.previous().attrs.get("href")
         parsed_uri = urlparse(uri)
@@ -670,15 +668,18 @@ class Parser:
         # oh yeah this needs to be fixed
         if style_dict := self.tag_style_to_dict(tk_node.token.attrs):
             match style_dict:
-                case {"padding": _} | {"padding-left": _} | {"padding-top": _} | {
-                    "padding-right": _
-                } | {"padding-bottom": _} | {"margin": _} | {"margin-left": _} | {
-                    "margin-top": _
-                } | {
-                    "margin-right": _
-                } | {
-                    "margin-bottom": _
-                }:
+                case (
+                    {"padding": _}
+                    | {"padding-left": _}
+                    | {"padding-top": _}
+                    | {"padding-right": _}
+                    | {"padding-bottom": _}
+                    | {"margin": _}
+                    | {"margin-left": _}
+                    | {"margin-top": _}
+                    | {"margin-right": _}
+                    | {"margin-bottom": _}
+                ):
                     name = f"{tk_node.node.name}-margin"
                     return MarginContainer(name, properties=style_dict)
 
@@ -748,6 +749,13 @@ class Parser:
 
     def apply_div_class_options(self, tk_node: TokenNode) -> None:
         match tk_node.node.name:
+            case "footer-wrap":
+                tk_node.node.type = "VBoxContainer"
+                properties = {
+                    "layout_mode": 2,
+                    "size_flags_horizontal": 4,
+                    "size_flags_vertical": 0,
+                }
             case "flex-container-content":
                 tk_node.node.type = "HBoxContainer"
                 properties = {
@@ -806,16 +814,16 @@ class Parser:
 
         properties = {
             "layout_mode": 2,
-            "size_flags_horizontal": 3,
-            "size_flags_vertical": 3,
+            "size_flags_horizontal": 4,
+            "size_flags_vertical": 8,
         }
-
         tk_node.node.properties.update(properties)
 
     def apply_style_to_node(self, tk_node: TokenNode) -> None:
         # tk_node.node.properties.update(properties)
 
         if style_dict := self.tag_style_to_dict(tk_node.token.attrs):
+            print("style dict for this", style_dict)
             match style_dict:
                 case {"display": "flex", "flex-direction": "column"}:
                     tk_node.node.type = "VBoxContainer"

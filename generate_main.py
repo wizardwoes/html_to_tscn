@@ -35,7 +35,8 @@ def setup_ready_script():
 
     # set up our onready vars
     script.onready["scrollbar"] = f'$".".get_v_scroll_bar()'
-    script.onready["content_sibling"] = f'\"body-margin/body/navbar-margin\"'
+    # script.onready["content_sibling"] = f'\"body-margin/body/navbar-margin\"'
+    script.onready["content_sibling"] = f'"body/navbar"'
     script.onready["content_scene"] = f'preload("home/home.tscn").instantiate()'
 
     return script

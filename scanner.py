@@ -7,7 +7,7 @@ class HtmlScanner:
         self.tokens = []
         self.current_tag = source
         self.scope = []
-
+        
     def _is_at_end(self) -> bool:
         if self.current_tag.next_element:
             return False
