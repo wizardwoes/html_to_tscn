@@ -618,7 +618,7 @@ class Parser:
             properties = {
                 "layout_mode": 2,
                 "fit_content": True,
-                "autowrap_mode": 3,
+                "autowrap_mode": 0,
                 "text": text,
             }
 

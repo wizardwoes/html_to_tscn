@@ -205,25 +205,11 @@ class GDScriptResource:
     def as_property_field(self):
         return "script"
 
-    # @property
-    # def script_header(self):
-    #     return f"extends {self.source}"
-
     def add_function(self, func: ScriptFunction) -> None:
         if func_exists := self.funcs.get(func.name):
             func_exists.code.extend(func.code)
         else:
             self.funcs[func.name] = func
-
-    # def render(self) -> str:
-    #     merged_funcs = []
-    #     onready_vars = self.render_onready_vars()
-
-    #     for func in self.funcs.values():
-    #         merged_funcs.append(func.render())
-
-    #     funcs = "\n".join(merged_funcs)
-    #     return f"{self.script_header}\n\n" f"{onready_vars}" f"\n\n" f"{funcs}\n\n"
 
     def render_onready_vars(self) -> str:
         to_str = []
@@ -275,6 +261,9 @@ class ExtResourceGodot:
         match self.resource:
             case GDScriptResource():
                 self.type = "Script"
+            case Texture2DGodot():
+                # need to figure out better way of handling this
+                self.type = self.resource.as_property_field()
             case _:
                 self.type = self.resource.type
 
@@ -359,38 +348,6 @@ class SceneGodot:
 
         return scripts
     
-    # def render(self) -> list[str]:
-    #     out = []
-
-    #     fd = render(self.fd)
-    #     out.append(fd)
-
-    #     # ext_resources need to be written to their own file
-    #     # only the header ends up here
-    #     ext_resources = [res.header for res in self.ext_resources if res]
-    #     print(len(ext_resources))
-    #     out.extend(ext_resources)
-    #     out.append("\n")
-
-    #     sub_resources = [render(res) for res in self.sub_resources]
-    #     out.extend(sub_resources)
-
-    #     nodes = self._render_nodes(self.nodes, [])
-    #     out.extend(nodes)
-
-    #     connections = [render(res) for res in self.connections]
-    #     out.extend(connections)
-    #     return out
-
-    # def _render_nodes(self, node, scene):
-    #     if not scene:
-    #         scene = [render(node)]
-
-    #     for n in node.children:
-    #         scene.append(render(n))
-    #         self._render_nodes(n, scene)
-
-    #     return scene
     
     def flat_nodes(self) -> list[NodeGodot]:
         return self._flatten_nodes(self.nodes, [self.nodes])
@@ -401,21 +358,3 @@ class SceneGodot:
             self._flatten_nodes(n, nodes)
 
         return nodes
-
-
-# def render(entity) -> str:
-#     match entity:
-#         case SceneGodot():
-#             return entity.render()
-#         case NodeGodot():
-#             return entity.render()
-#         case FileDescriptorGodot():
-#             return entity.render()
-#         # case SubResourceGodot():
-#         #     return entity.render()
-#         case ExtResourceGodot():
-#             return entity.render()
-#         case GDScriptResource():
-#             return entity.render()
-#         case ConnectionGodot():
-#             return entity.render()
