@@ -1,13 +1,14 @@
 from tag_token import Token, TagCategory
 from bs4 import NavigableString
 
+
 class HtmlScanner:
     def __init__(self, source) -> None:
         self.source = source
         self.tokens = []
         self.current_tag = source
         self.scope = []
-        
+
     def _is_at_end(self) -> bool:
         if self.current_tag.next_element:
             return False

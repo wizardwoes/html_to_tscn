@@ -34,6 +34,7 @@ class NodeGodot:
     resource_type: str = "node"
     _children: list["NodeGodot"] = field(default_factory=list)
     properties: dict = field(default_factory=dict)
+    theme_properties: dict = field(default_factory=dict)
     resources: list = field(default_factory=list)
     # for now its an external resource but probably want to unwrap it for this one
     script: "ExtResourceGodot" = None
@@ -47,11 +48,11 @@ class NodeGodot:
     @property
     def children(self):
         return self._children
-    
+
     @property
     def parent_path_str(self):
         return self.handle_parent_text()
-    
+
     def add_child(self, child):
         if child.name in [node.name for node in self._children]:
             suffix = generate_random_id()
@@ -90,6 +91,11 @@ class NodeGodot:
         if self.properties:
             properties = self._render_properties()
             to_render.append(properties)
+            
+        # all the rendering is in the template so not sure 
+        # if self.theme_properties:
+        #     theme_properties = self._render_theme_properties()
+        #     to_render.append(theme_properties)
 
         if self.resources:
             resources = self._render_node_resources()
@@ -137,7 +143,29 @@ class NodeGodot:
 
         return "\n".join(prop_str) + "\n"
 
+    # def _render_theme_properties(self):
+    #     prop_str = []
+    #     for k, v in self.theme_properties.items():
+    #         match v:
+    #             case bool():
+    #                 s = str(v).lower()
+    #                 fstr = f"theme_override_constants/{k} = {s}"
+    #                 prop_str.append(fstr)
+    #             case str():
+    #                 fstr = f'theme_override_constants/{k} = "{v}"'
+    #                 prop_str.append(fstr)
+    #             case None:
+    #                 continue
+    #             case _:
+    #                 fstr = f"theme_override_constants/{k} = {str(v)}"
+    #                 prop_str.append(fstr)
+
+    #     return "\n".join(prop_str) + "\n"
+
+
     def renderable_properties(self):
+        # this is called from the template
+        # maybe a terrible decision in hindsight
         renderable = {}
         for k, v in self.properties.items():
             match v:
@@ -148,9 +176,28 @@ class NodeGodot:
                     renderable[k] = f'"{v}"'
                 case _:
                     renderable[k] = str(v)
-        
+
         return renderable
-    
+
+    def renderable_theme_properties(self):
+        # where we would prepend like
+        # fstr = f"theme_override_constants/{k} = {s}"
+        renderable = {}
+        for k, v in self.theme_properties.items():
+            match v:
+                case bool():
+                    s = str(v).lower()
+                    renderable[k] = s
+                case str():
+                    renderable[k] = f'"{v}"'
+                case None:
+                    continue
+                case _:
+                    renderable[k] = str(v)
+                
+
+        return renderable
+
     def _render_node_resources(self):
         res_str = []
         for resource in self.resources:
@@ -213,16 +260,13 @@ class GDScriptResource:
 
     def render_onready_vars(self) -> str:
         to_str = []
-        for k,v in self.onready.items():
-            # example: 
+        for k, v in self.onready.items():
+            # example:
             # @onready var scrollbar = $".".get_v_scroll_bar()
             var_str = f"@onready var {k} = {v}"
             to_str.append(var_str)
 
         return "\n".join(to_str)
-
-        
-
 
 
 @dataclass
@@ -319,12 +363,16 @@ class SceneGodot:
         if not self.fd:
             self.fd = FileDescriptorGodot(1, self.uid)
         self.fd.load_steps = len(self.ext_resources) + len(self.sub_resources) + 1
-    
+
     @property
     def ext_resources(self) -> list[ExtResourceGodot]:
-        return self._collect_ext_resources(self.nodes, [*self.nodes.resources, self.nodes.script])
+        return self._collect_ext_resources(
+            self.nodes, [*self.nodes.resources, self.nodes.script]
+        )
 
-    def _collect_ext_resources(self, node: NodeGodot, resources=None) -> list[ExtResourceGodot]:
+    def _collect_ext_resources(
+        self, node: NodeGodot, resources=None
+    ) -> list[ExtResourceGodot]:
         for child in node.children:
             if resource := child.resources:
                 resources.extend(resource)
@@ -333,13 +381,15 @@ class SceneGodot:
 
             self._collect_ext_resources(child, resources)
 
-        return resources 
-    
+        return resources
+
     @property
     def scripts(self) -> list[ExtResourceGodot]:
         return self._collect_node_scripts(self.nodes, [self.nodes.script])
 
-    def _collect_node_scripts(self, node: NodeGodot, scripts=None) -> list[ExtResourceGodot]:
+    def _collect_node_scripts(
+        self, node: NodeGodot, scripts=None
+    ) -> list[ExtResourceGodot]:
         for child in node.children:
             if script := child.script:
                 scripts.append(script)
@@ -347,11 +397,10 @@ class SceneGodot:
             self._collect_node_scripts(child, scripts)
 
         return scripts
-    
-    
+
     def flat_nodes(self) -> list[NodeGodot]:
         return self._flatten_nodes(self.nodes, [self.nodes])
-    
+
     def _flatten_nodes(self, node, nodes) -> list[NodeGodot]:
         for n in node.children:
             nodes.append(n)

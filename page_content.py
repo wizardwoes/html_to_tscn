@@ -34,7 +34,7 @@ def main(args):
     root_properties = {
         "size_flags_horizontal": 3,
         "size_flags_vertical": 3,
-        "anchors_preset": 15,
+        # "anchors_preset": 15,
         # "anchor_right": 1.0,
         # "anchor_bottom": 1.0,
         # "horizontal_scroll_mode": 0,

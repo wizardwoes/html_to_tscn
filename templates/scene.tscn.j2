@@ -4,6 +4,12 @@
 {% endfor %}
 {%- endmacro %}
 
+{% macro render_node_theme_properties(properties) -%}
+{% for key, value in properties.items() %}
+theme_override_constants/{{ key }} = {{ value }}
+{% endfor %}
+{%- endmacro %}
+
 {% macro render_node_resource(resource) -%}
 {{resource.type.lower()}} = ExtResource("{{resource.id}}")
 {%- endmacro %}
@@ -33,6 +39,9 @@
 {{ render_node_header(node.resource_type, node.name, node.type, node.parent_path_str) }}
 {% if node.properties %}
 {{ render_node_properties(node.renderable_properties()) -}}
+{% endif %}
+{% if node.theme_properties %}
+{{ render_node_theme_properties(node.renderable_theme_properties()) -}}
 {% endif %}
 {% if node.resources %}
 {{ render_node_resources(node.resources) }}

@@ -64,10 +64,10 @@ if __name__ == "__main__":
 
     # remove the head tag
     soup.html.head.extract()
-    soup.html.body.find(id="main").extract()
 
-    # only need the navbar
-    # soup.html.body.find(id="content").extract()
+    # remove main tag
+    # leaves only navbar and footer
+    soup.html.body.find(id="main").extract()
 
     root_node = NodeGodot("HtmlNode", "ScrollContainer", properties=root_properties)
 
