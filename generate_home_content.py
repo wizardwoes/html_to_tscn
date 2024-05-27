@@ -64,7 +64,7 @@ def main(args):
     scene = SceneGodot(root_node)
 
     outfile = f"home"
-    base_dir = Path(f"godot_output\home\{outfile}")
+    base_dir = Path(f"godot_output\{outfile}")
 
     writer = SceneWriter(scene, base_dir, outfile)
     writer.write_out_scene()

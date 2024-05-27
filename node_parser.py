@@ -9,28 +9,14 @@ from godot import (
     NodeGodot,
     ScriptFunction,
     Texture2DGodot,
+    HBoxContainer,
+    VBoxContainer,
+    LinkButton,
+    LinkButtonExternal,
+    RichTextLabel,
+    TextureRect,
 )
 from tag_token import TagCategory, Token
-
-
-@dataclass
-class HBoxContainer(NodeGodot):
-    type: str = "HboxContainer"
-
-
-# @dataclass
-# class RichTextLabel(NodeGodot):
-#     type: str = "RichTextLabel"
-
-
-@dataclass
-class LinkButton(NodeGodot):
-    type: str = "LinkButton"
-
-
-@dataclass
-class LinkButtonExternal(NodeGodot):
-    type: str = "LinkButton"
 
 
 def make_rich_text_label(name, text, extra_properties=None):
@@ -45,27 +31,22 @@ def make_rich_text_label(name, text, extra_properties=None):
     if extra_properties:
         properties.update(extra_properties)
 
-    return NodeGodot(name, type="RichTextLabel", properties=properties)
+    return RichTextLabel(name, properties=properties)
 
 
-# @dataclass
-# class TextureRect(NodeGodot):
-#     type: str = "TextureRect"
+# def make_texture_rect(name, extra_properties=None):
+#     # figure out way to derive these properties from something else
+#     properties = {
+#         "layout_mode": 2,
+#         "size_flags_vertical": 3,
+#         "expand_mode": 5,
+#         "stretch_mode": 4,
+#     }
 
+#     if extra_properties:
+#         properties.update(extra_properties)
 
-def make_texture_rect(name, extra_properties=None):
-    # figure out way to derive these properties from something else
-    properties = {
-        "layout_mode": 2,
-        "size_flags_vertical": 3,
-        "expand_mode": 5,
-        "stretch_mode": 4,
-    }
-
-    if extra_properties:
-        properties.update(extra_properties)
-
-    return NodeGodot(name, type="TextureRect", properties=properties)
+#     return NodeGodot(name, type="TextureRect", properties=properties)
 
 
 def on_link_button_pressed_func(method_name, path_to_node):
@@ -78,56 +59,56 @@ def on_link_button_pressed_func(method_name, path_to_node):
     return ScriptFunction(name, code)
 
 
-def attach_connection(node: NodeGodot, connection: ConnectionGodot) -> None:
-    node.connections.append(connection)
+# def attach_connection(node: NodeGodot, connection: ConnectionGodot) -> None:
+#     node.connections.append(connection)
 
 
-def collect_ext_resources(node: NodeGodot, resources=None) -> list[ExtResourceGodot]:
-    for child in node.children:
-        if resource := child.resources:
-            resources.extend(resource)
+# def collect_ext_resources(node: NodeGodot, resources=None) -> list[ExtResourceGodot]:
+#     for child in node.children:
+#         if resource := child.resources:
+#             resources.extend(resource)
 
-        collect_ext_resources(child, resources)
+#         collect_ext_resources(child, resources)
 
-    return resources
-
-
-def collect_node_scripts(node: NodeGodot, scripts=None) -> list[ExtResourceGodot]:
-    for child in node.children:
-        if script := child.script:
-            scripts.append(script)
-
-        collect_node_scripts(child, scripts)
-
-    return scripts
+#     return resources
 
 
-def collect_connections(node: NodeGodot, connections=None) -> list[ConnectionGodot]:
-    for child in node.children:
-        if connection := child.connections:
-            for cxn in connection:
-                node_parent = child.handle_parent_text()
-                cxn.from_node = node_parent + "/" + cxn.from_node
+# def collect_node_scripts(node: NodeGodot, scripts=None) -> list[ExtResourceGodot]:
+#     for child in node.children:
+#         if script := child.script:
+#             scripts.append(script)
 
-            connections.extend(connection)
+#         collect_node_scripts(child, scripts)
 
-        collect_connections(child, connections)
-
-    return connections
+#     return scripts
 
 
-def render_script(script: GDScriptResource) -> str:
-    ready = "\n".join([f"\t{line}" for line in script.ready])
-    # [sub_resource type="GDScript" id="GDScript_x1emt"]
-    return (
-        f"extends {script.source}\n"
-        f"\n\n\n"
-        f"# Called when the node enters the scene tree for the first time.\n"
-        f"func _ready():\n"
-        f"{ready}\n\n"
-        f"func _process(delta):\n"
-        f"\tpass\n"
-    )
+# def collect_connections(node: NodeGodot, connections=None) -> list[ConnectionGodot]:
+#     for child in node.children:
+#         if connection := child.connections:
+#             for cxn in connection:
+#                 node_parent = child.handle_parent_text()
+#                 cxn.from_node = node_parent + "/" + cxn.from_node
+
+#             connections.extend(connection)
+
+#         collect_connections(child, connections)
+
+#     return connections
+
+
+# def render_script(script: GDScriptResource) -> str:
+#     ready = "\n".join([f"\t{line}" for line in script.ready])
+#     # [sub_resource type="GDScript" id="GDScript_x1emt"]
+#     return (
+#         f"extends {script.source}\n"
+#         f"\n\n\n"
+#         f"# Called when the node enters the scene tree for the first time.\n"
+#         f"func _ready():\n"
+#         f"{ready}\n\n"
+#         f"func _process(delta):\n"
+#         f"\tpass\n"
+#     )
 
 
 def attach_resource(node: NodeGodot, resource) -> None:
@@ -153,6 +134,9 @@ class MarginContainer(NodeGodot):
 
         self._map_margin_values()
         self._map_padding_values()
+
+        self.update_margins()
+
         self.properties.update(
             {
                 "layout_mode": 2,
@@ -160,80 +144,9 @@ class MarginContainer(NodeGodot):
                 "size_flags_vertical": 3,
             }
         )
-        self.update_margins()
-
-    def _map_padding_values(self) -> dict:
-        # this function basically handles the formatting of the two padding cases
-        properties = {}
-
-        # case where padding is defined as something like
-        # padding: 25px 50px 75px 100px;
-        if pval := self.properties.get("padding"):
-            match pval.split(" "):
-                case [all_pad]:
-                    # change this later
-                    for k, v in self.theme_properties.items():
-                        self.theme_properties[k] = all_pad
-
-                case [top_bottom, left_right]:
-                    for k in [
-                        "margin_left",
-                        "margin_right",
-                    ]:
-                        self.theme_properties[k] = left_right
-
-                    for k in [
-                        "margin_top",
-                        "margin_bottom",
-                    ]:
-                        self.theme_properties[k] = top_bottom
-
-                case [top, left_right, bottom]:
-                    for k in [
-                        "margin_left",
-                        "margin_right",
-                    ]:
-                        self.theme_properties[k] = left_right
-
-                    self.theme_properties["margin_top"] = top
-                    self.theme_properties["margin_bottom"] = bottom
-
-                case [top, right, bottom, left]:
-                    self.theme_properties["margin_left"] = left
-                    self.theme_properties["margin_top"] = top
-                    self.theme_properties["margin_right"] = right
-                    self.theme_properties["margin_bottom"] = bottom
-
-            del self.properties["padding"]
-
-        # case where we use one of the 4 padding-*
-        # check if property is in our map
-        # put it in our dict if it is
-        # more specific so overrides whatever our padding is
-        # might make more sense to make this explicit instead of a loop but whatever
-
-        if pval := self.properties.get("padding-top"):
-            self.theme_properties["margin_top"] = pval
-            del self.properties["padding-top"]
-
-        if pval := self.properties.get("padding-bottom"):
-            self.theme_properties["margin_bottom"] = pval
-            del self.properties["padding-bottom"]
-
-        if pval := self.properties.get("padding-right"):
-            self.theme_properties["margin_right"] = pval
-            del self.properties["padding-right"]
-
-        if pval := self.properties.get("padding-left"):
-            self.theme_properties["margin_left"] = pval
-            del self.properties["padding-left"]
-
-        return properties
 
     def _map_margin_values(self) -> dict:
         # this function basically handles the formatting of the two margins
-        properties = {}
-
         # case where margin is defined as something like
         # margin: 25px 50px 75px 100px;
         if pval := self.properties.get("margin"):
@@ -278,10 +191,6 @@ class MarginContainer(NodeGodot):
         # check if property is in our map
         # put it in our dict if it is
         # more specific so overrides whatever our margin is
-        # might make more sense to make this explicit instead of a loop but whatever
-        # for k, v in self.margin_map.items():
-        #     if pval := self.properties.get(k):
-        #         properties[v] = pval
 
         if pval := self.properties.get("margin-top"):
             self.theme_properties["margin_top"] = pval
@@ -299,7 +208,68 @@ class MarginContainer(NodeGodot):
             self.theme_properties["margin_left"] = pval
             del self.properties["margin-left"]
 
-        return properties
+    def _map_padding_values(self) -> dict:
+        # this function basically handles the formatting of the two padding cases
+        # case where padding is defined as something like
+        # padding: 25px 50px 75px 100px;
+        if pval := self.properties.get("padding"):
+            match pval.split(" "):
+                case [all_pad]:
+                    # change this later
+                    for k, v in self.theme_properties.items():
+                        self.theme_properties[k] = all_pad
+
+                case [top_bottom, left_right]:
+                    for k in [
+                        "margin_left",
+                        "margin_right",
+                    ]:
+                        self.theme_properties[k] = left_right
+
+                    for k in [
+                        "margin_top",
+                        "margin_bottom",
+                    ]:
+                        self.theme_properties[k] = top_bottom
+
+                case [top, left_right, bottom]:
+                    for k in [
+                        "margin_left",
+                        "margin_right",
+                    ]:
+                        self.theme_properties[k] = left_right
+
+                    self.theme_properties["margin_top"] = top
+                    self.theme_properties["margin_bottom"] = bottom
+
+                case [top, right, bottom, left]:
+                    self.theme_properties["margin_left"] = left
+                    self.theme_properties["margin_top"] = top
+                    self.theme_properties["margin_right"] = right
+                    self.theme_properties["margin_bottom"] = bottom
+
+            del self.properties["padding"]
+
+        # case where we use one of the 4 padding-*
+        # check if property is in our map
+        # put it in our dict if it is
+        # more specific so overrides whatever our padding is
+
+        if pval := self.properties.get("padding-top"):
+            self.theme_properties["margin_top"] = pval
+            del self.properties["padding-top"]
+
+        if pval := self.properties.get("padding-bottom"):
+            self.theme_properties["margin_bottom"] = pval
+            del self.properties["padding-bottom"]
+
+        if pval := self.properties.get("padding-right"):
+            self.theme_properties["margin_right"] = pval
+            del self.properties["padding-right"]
+
+        if pval := self.properties.get("padding-left"):
+            self.theme_properties["margin_left"] = pval
+            del self.properties["padding-left"]
 
     def update_margins(self) -> None:
         # side effect heavy
@@ -494,14 +464,18 @@ class Parser:
                     link_prop["uri"] = uri
                     node = LinkButtonExternal("link", properties=link_prop)
                 case {"name": "", "link_name": _ as link_name}:
+                    # hacky way to handle our home page link
+                    # sure this won't bite me in the ass later
                     if link_name == "":
                         link_name = "home-page"
+                        link_prop["text"] = "wizard woes"
                     node = LinkButton(link_name, properties=link_prop)
                 case {"name": _ as name}:
                     node = LinkButton(name, properties=link_prop)
 
             for child in self.if_children_make_nodes():
                 if child_text := child.properties.get("text"):
+                    print("what about here?", child_text)
                     node.properties["text"] = child_text
 
             match node:
@@ -656,7 +630,7 @@ class Parser:
 
         if self.match(TagCategory.IMG):
             prev = self.previous()
-            node = make_texture_rect("img")
+            node = TextureRect("img")
             fname = prev.attrs.get("src").split("/")[-1]
             img_texture = Texture2DGodot(fname)
             res = ExtResourceGodot(img_texture, path=node.name)
@@ -804,47 +778,21 @@ class Parser:
                 )
 
     def apply_div_class_options(self, tk_node: TokenNode) -> None:
-        match tk_node.node.name:
+        match name := tk_node.node.name:
+            case "flex-container-content" | "navbar__entries" | "navbar__entry":
+                tk_node.node = HBoxContainer(name)
             case "footer-wrap":
-                tk_node.node.type = "VBoxContainer"
-                properties = {
-                    "layout_mode": 2,
-                    "size_flags_horizontal": 4,
-                    "size_flags_vertical": 0,
-                }
-            case "flex-container-content":
-                tk_node.node.type = "HBoxContainer"
-                properties = {
-                    "layout_mode": 2,
-                    "size_flags_horizontal": 3,
-                    "size_flags_vertical": 3,
-                }
-            case "navbar__entries":
-                tk_node.node.type = "HBoxContainer"
-                properties = {
-                    "layout_mode": 2,
-                    "size_flags_horizontal": 3,
-                    "size_flags_vertical": 3,
-                }
-            case "navbar__entry":
-                tk_node.node.type = "HBoxContainer"
-                properties = {
-                    "layout_mode": 2,
-                    "size_flags_horizontal": 0,
-                    "size_flags_vertical": 0,
-                }
+                tk_node.node = VBoxContainer(name)
             case _:
-                tk_node.node.type = "VBoxContainer"
                 properties = {
                     "layout_mode": 2,
                     "size_flags_horizontal": 3,
                     "size_flags_vertical": 3,
                 }
-
-        tk_node.node.properties.update(properties)
+                tk_node.node = VBoxContainer(name, properties=properties)
 
     def apply_body_options(self, tk_node: TokenNode) -> None:
-        tk_node.node.type = "VBoxContainer"
+        # tk_node.node.type = "VBoxContainer"
 
         properties = {
             "layout_mode": 2,
@@ -852,10 +800,11 @@ class Parser:
             "size_flags_vertical": 3,
         }
 
-        tk_node.node.properties.update(properties)
+        # tk_node.node.properties.update(properties)
+        tk_node.node = VBoxContainer(tk_node.node.name, properties=properties)
 
     def apply_nav_options(self, tk_node: TokenNode) -> None:
-        tk_node.node.type = "HBoxContainer"
+        # tk_node.node.type = "HBoxContainer"
 
         properties = {
             "layout_mode": 2,
@@ -863,17 +812,19 @@ class Parser:
             "size_flags_vertical": 3,
         }
 
-        tk_node.node.properties.update(properties)
+        # tk_node.node.properties.update(properties)
+        tk_node.node = HBoxContainer(tk_node.node.name, properties=properties)
 
     def apply_footer_options(self, tk_node: TokenNode) -> None:
-        tk_node.node.type = "HBoxContainer"
+        # tk_node.node.type = "HBoxContainer"
 
         properties = {
             "layout_mode": 2,
             "size_flags_horizontal": 4,
             "size_flags_vertical": 8,
         }
-        tk_node.node.properties.update(properties)
+        tk_node.node = HBoxContainer(tk_node.node.name, properties=properties)
+        # tk_node.node.properties.update(properties)
 
     def apply_style_to_node(self, tk_node: TokenNode) -> None:
         # tk_node.node.properties.update(properties)

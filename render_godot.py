@@ -11,12 +11,6 @@ env = Environment(
 
 
 from pathlib import Path
-from bs4 import BeautifulSoup
-import css_inline
-
-from scanner import HtmlScanner
-
-from node_parser import Parser
 
 from godot import NodeGodot, SceneGodot, GDScriptResource
 
@@ -35,7 +29,7 @@ class SceneWriter:
             ext_resource=self.scene.ext_resources,
             nodes=nodes,
         )
-    
+
     def render_script_resource(self, script) -> str:
         script_template = env.get_template("gdscript.gd.j2")
         return script_template.render(script=script)
@@ -44,6 +38,7 @@ class SceneWriter:
         rendered = self.render_scene()
 
         outdir = Path(self.output_dir)
+        print("what is outdir", outdir)
         outdir.mkdir(exist_ok=True)
 
         print(f"Write it out to {self.out_fname}")

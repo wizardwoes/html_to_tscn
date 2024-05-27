@@ -33,6 +33,7 @@ class NodeGodot:
     parent: "NodeGodot" = None
     resource_type: str = "node"
     _children: list["NodeGodot"] = field(default_factory=list)
+    _default_properties: dict = field(default_factory=dict)
     properties: dict = field(default_factory=dict)
     theme_properties: dict = field(default_factory=dict)
     resources: list = field(default_factory=list)
@@ -44,6 +45,10 @@ class NodeGodot:
         if self.parent:
             self.parent.add_child(self)
             self.parent_path = self.handle_parent_text()
+
+        if self._default_properties:
+            self._default_properties.update(self.properties)
+            self.properties = self._default_properties
 
     @property
     def children(self):
@@ -91,8 +96,8 @@ class NodeGodot:
         if self.properties:
             properties = self._render_properties()
             to_render.append(properties)
-            
-        # all the rendering is in the template so not sure 
+
+        # all the rendering is in the template so not sure
         # if self.theme_properties:
         #     theme_properties = self._render_theme_properties()
         #     to_render.append(theme_properties)
@@ -162,7 +167,6 @@ class NodeGodot:
 
     #     return "\n".join(prop_str) + "\n"
 
-
     def renderable_properties(self):
         # this is called from the template
         # maybe a terrible decision in hindsight
@@ -194,7 +198,6 @@ class NodeGodot:
                     continue
                 case _:
                     renderable[k] = str(v)
-                
 
         return renderable
 
@@ -213,6 +216,57 @@ class NodeGodot:
         fstr = f"{self.script.resource.as_property_field()} = {ext_res_id}"
 
         return fstr + "\n"
+
+
+@dataclass
+class HBoxContainer(NodeGodot):
+    type: str = "HBoxContainer"
+    _default_properties: dict = field(
+        default_factory=lambda: {
+            "layout_mode": 2,
+            "size_flags_vertical": 3,
+        }
+    )
+
+
+@dataclass
+class VBoxContainer(NodeGodot):
+    type: str = "VBoxContainer"
+    _default_properties: dict = field(
+        default_factory=lambda: {
+            "layout_mode": 2,
+            "size_flags_horizontal": 4,
+            "size_flags_vertical": 0,
+        }
+    )
+
+
+@dataclass
+class RichTextLabel(NodeGodot):
+    type: str = "RichTextLabel"
+
+
+@dataclass
+class LinkButton(NodeGodot):
+    type: str = "LinkButton"
+
+
+@dataclass
+class LinkButtonExternal(NodeGodot):
+    type: str = "LinkButton"
+
+
+@dataclass
+class TextureRect(NodeGodot):
+    type: str = "TextureRect"
+    _default_properties: dict = field(
+        default_factory=lambda: {
+            "layout_mode": 2,
+            "size_flags_vertical": 3,
+            "expand_mode": 5,
+            "stretch_mode": 4,
+        }
+    )
 
 
 @dataclass
