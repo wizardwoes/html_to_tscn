@@ -1,8 +1,7 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from urllib.parse import urlparse
 
 from godot import (
-    ConnectionGodot,
     ExtResourceGodot,
     FontFileGodot,
     GDScriptResource,
@@ -11,9 +10,11 @@ from godot import (
     Texture2DGodot,
     HBoxContainer,
     VBoxContainer,
+    MarginContainer,
     LinkButton,
     LinkButtonExternal,
     RichTextLabel,
+    Label,
     TextureRect,
 )
 from tag_token import TagCategory, Token
@@ -34,21 +35,6 @@ def make_rich_text_label(name, text, extra_properties=None):
     return RichTextLabel(name, properties=properties)
 
 
-# def make_texture_rect(name, extra_properties=None):
-#     # figure out way to derive these properties from something else
-#     properties = {
-#         "layout_mode": 2,
-#         "size_flags_vertical": 3,
-#         "expand_mode": 5,
-#         "stretch_mode": 4,
-#     }
-
-#     if extra_properties:
-#         properties.update(extra_properties)
-
-#     return NodeGodot(name, type="TextureRect", properties=properties)
-
-
 def on_link_button_pressed_func(method_name, path_to_node):
     # example
     # func _on_button_pressed():
@@ -59,281 +45,9 @@ def on_link_button_pressed_func(method_name, path_to_node):
     return ScriptFunction(name, code)
 
 
-# def attach_connection(node: NodeGodot, connection: ConnectionGodot) -> None:
-#     node.connections.append(connection)
-
-
-# def collect_ext_resources(node: NodeGodot, resources=None) -> list[ExtResourceGodot]:
-#     for child in node.children:
-#         if resource := child.resources:
-#             resources.extend(resource)
-
-#         collect_ext_resources(child, resources)
-
-#     return resources
-
-
-# def collect_node_scripts(node: NodeGodot, scripts=None) -> list[ExtResourceGodot]:
-#     for child in node.children:
-#         if script := child.script:
-#             scripts.append(script)
-
-#         collect_node_scripts(child, scripts)
-
-#     return scripts
-
-
-# def collect_connections(node: NodeGodot, connections=None) -> list[ConnectionGodot]:
-#     for child in node.children:
-#         if connection := child.connections:
-#             for cxn in connection:
-#                 node_parent = child.handle_parent_text()
-#                 cxn.from_node = node_parent + "/" + cxn.from_node
-
-#             connections.extend(connection)
-
-#         collect_connections(child, connections)
-
-#     return connections
-
-
-# def render_script(script: GDScriptResource) -> str:
-#     ready = "\n".join([f"\t{line}" for line in script.ready])
-#     # [sub_resource type="GDScript" id="GDScript_x1emt"]
-#     return (
-#         f"extends {script.source}\n"
-#         f"\n\n\n"
-#         f"# Called when the node enters the scene tree for the first time.\n"
-#         f"func _ready():\n"
-#         f"{ready}\n\n"
-#         f"func _process(delta):\n"
-#         f"\tpass\n"
-#     )
-
-
 def attach_resource(node: NodeGodot, resource) -> None:
     resource.path = node.name
     node.resources.append(resource)
-
-
-@dataclass
-class MarginContainer(NodeGodot):
-    type: str = "MarginContainer"
-    theme_properties: dict = field(
-        default_factory=lambda: {
-            "margin_left": None,
-            "margin_top": None,
-            "margin_right": None,
-            "margin_bottom": None,
-        }
-    )
-
-    def __post_init__(self):
-        # just going to cheat and handle padding and margins the exact same way
-        # need to find cases where an element has both of these though
-
-        self._map_margin_values()
-        self._map_padding_values()
-
-        self.update_margins()
-
-        self.properties.update(
-            {
-                "layout_mode": 2,
-                "size_flags_horizontal": 3,
-                "size_flags_vertical": 3,
-            }
-        )
-
-    def _map_margin_values(self) -> dict:
-        # this function basically handles the formatting of the two margins
-        # case where margin is defined as something like
-        # margin: 25px 50px 75px 100px;
-        if pval := self.properties.get("margin"):
-            match pval.split(" "):
-                case [all_pad]:
-                    # change this later
-                    for k, v in self.theme_properties.items():
-                        self.theme_properties[k] = all_pad
-
-                case [top_bottom, left_right]:
-                    for k in [
-                        "margin_left",
-                        "margin_right",
-                    ]:
-                        self.theme_properties[k] = left_right
-
-                    for k in [
-                        "margin_top",
-                        "margin_bottom",
-                    ]:
-                        self.theme_properties[k] = top_bottom
-
-                case [top, left_right, bottom]:
-                    for k in [
-                        "margin_left",
-                        "margin_right",
-                    ]:
-                        self.theme_properties[k] = left_right
-
-                    self.theme_properties["margin_top"] = top
-                    self.theme_properties["margin_bottom"] = bottom
-
-                case [top, right, bottom, left]:
-                    self.theme_properties["margin_left"] = left
-                    self.theme_properties["margin_top"] = top
-                    self.theme_properties["margin_right"] = right
-                    self.theme_properties["margin_bottom"] = bottom
-
-            del self.properties["margin"]
-
-        # case where we use one of the 4 margin-*
-        # check if property is in our map
-        # put it in our dict if it is
-        # more specific so overrides whatever our margin is
-
-        if pval := self.properties.get("margin-top"):
-            self.theme_properties["margin_top"] = pval
-            del self.properties["margin-top"]
-
-        if pval := self.properties.get("margin-bottom"):
-            self.theme_properties["margin_bottom"] = pval
-            del self.properties["margin-bottom"]
-
-        if pval := self.properties.get("margin-right"):
-            self.theme_properties["margin_right"] = pval
-            del self.properties["margin-right"]
-
-        if pval := self.properties.get("margin-left"):
-            self.theme_properties["margin_left"] = pval
-            del self.properties["margin-left"]
-
-    def _map_padding_values(self) -> dict:
-        # this function basically handles the formatting of the two padding cases
-        # case where padding is defined as something like
-        # padding: 25px 50px 75px 100px;
-        if pval := self.properties.get("padding"):
-            match pval.split(" "):
-                case [all_pad]:
-                    # change this later
-                    for k, v in self.theme_properties.items():
-                        self.theme_properties[k] = all_pad
-
-                case [top_bottom, left_right]:
-                    for k in [
-                        "margin_left",
-                        "margin_right",
-                    ]:
-                        self.theme_properties[k] = left_right
-
-                    for k in [
-                        "margin_top",
-                        "margin_bottom",
-                    ]:
-                        self.theme_properties[k] = top_bottom
-
-                case [top, left_right, bottom]:
-                    for k in [
-                        "margin_left",
-                        "margin_right",
-                    ]:
-                        self.theme_properties[k] = left_right
-
-                    self.theme_properties["margin_top"] = top
-                    self.theme_properties["margin_bottom"] = bottom
-
-                case [top, right, bottom, left]:
-                    self.theme_properties["margin_left"] = left
-                    self.theme_properties["margin_top"] = top
-                    self.theme_properties["margin_right"] = right
-                    self.theme_properties["margin_bottom"] = bottom
-
-            del self.properties["padding"]
-
-        # case where we use one of the 4 padding-*
-        # check if property is in our map
-        # put it in our dict if it is
-        # more specific so overrides whatever our padding is
-
-        if pval := self.properties.get("padding-top"):
-            self.theme_properties["margin_top"] = pval
-            del self.properties["padding-top"]
-
-        if pval := self.properties.get("padding-bottom"):
-            self.theme_properties["margin_bottom"] = pval
-            del self.properties["padding-bottom"]
-
-        if pval := self.properties.get("padding-right"):
-            self.theme_properties["margin_right"] = pval
-            del self.properties["padding-right"]
-
-        if pval := self.properties.get("padding-left"):
-            self.theme_properties["margin_left"] = pval
-            del self.properties["padding-left"]
-
-    def update_margins(self) -> None:
-        # side effect heavy
-        # do i need to calculate the sizes / create this script at this point in time?
-        fragments = []
-        # this feels hacky
-        keys = list(self.theme_properties.keys())
-        for k in keys:
-            if v := self.theme_properties.get(k):
-                match self.convert_css_value_to_godot(v):
-                    case ("script", _ as val):
-                        frag = self.render_margin_fragment(k, val)
-                        fragments.extend(frag)
-                        del self.theme_properties[k]
-                    case ("int", _ as val):
-                        self.theme_properties[k] = val
-
-        if fragments:
-            script = make_ready_script(self, fragments)
-            self.add_script(script)
-
-    # this may be used in other css values than just padding
-    def convert_css_value_to_godot(self, value) -> tuple:
-        if "px" in value:
-            return ("int", int(value[:-2]))
-        if "%" in value:
-            calc = int(value[:-1]) * 0.01
-            return ("int", calc)
-        if "vh" in value:
-            calc = int(value[:-2]) * 0.01
-            pad_str = f"{calc} * get_viewport().get_visible_rect().size.x"
-            return ("script", pad_str)
-        if "vw" in value:
-            calc = int(value[:-2]) * 0.01
-            pad_str = f"{calc} * get_viewport().get_visible_rect().size.y"
-            return ("script", pad_str)
-        if "auto" in value:
-            return ("str", "auto value")
-        if "rem" in value:
-            # rem is relative to size of root element font
-            # 1rem = the font size of the html element
-            # for now we will cheat and say it's 16px
-            multiplier = int(value[:-3])
-            fontsize = 16
-            calc = multiplier * fontsize
-            return ("int", calc)
-        if "em" in value:
-            # em is relative to font size of element
-            # 1em = whatever the size is, 2em = twice the size
-            # if no fontsize is defined, then default is 16px
-            # may need to figure out how to handle changes in fontsize later
-
-            multiplier = int(value[:-2])
-            fontsize = 16
-            calc = multiplier * fontsize
-            return ("int", calc)
-
-        return ("int", int(value))
-
-    def render_margin_fragment(self, margin_dir, margin_val):
-        define_str = f"var {margin_dir} = {margin_val}"
-        add_theme_str = f'add_theme_constant_override("{margin_dir}", {margin_dir})'
-
-        return [define_str, add_theme_str]
 
 
 def render_connection_fragment(var_name, node_path, signal, method_name):
@@ -343,12 +57,14 @@ def render_connection_fragment(var_name, node_path, signal, method_name):
     return [define_str, connect_str]
 
 
-def make_ready_script(node, fragments):
-    func = ScriptFunction("_ready", fragments)
-    script = GDScriptResource(source=node.type)
-    script.add_function(func)
+# leaving this for now
+# but can probably delete later
+# def make_ready_script(node, fragments):
+#     func = ScriptFunction("_ready", fragments)
+#     script = GDScriptResource(source=node.type)
+#     script.add_function(func)
 
-    return script
+#     return script
 
 
 @dataclass
@@ -379,6 +95,7 @@ class Parser:
             tk_node = TokenNode(self.previous(), node)
             self.apply_class_options_to_node(tk_node)
             self.apply_style_to_node(tk_node)
+            self.apply_font_style_to_node(tk_node)
 
             for child in self.if_children_make_nodes():
                 node.add_child(child)
@@ -391,6 +108,7 @@ class Parser:
             tk_node = TokenNode(self.previous(), node)
             self.apply_class_options_to_node(tk_node)
             self.apply_style_to_node(tk_node)
+            self.apply_font_style_to_node(tk_node)
 
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
@@ -408,6 +126,7 @@ class Parser:
             self.apply_class_options_to_node(tk_node)
             # need to figure out better way to not overwrite
             # self.apply_style_to_node(tk_node)
+            self.apply_font_style_to_node(tk_node)
 
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
@@ -423,8 +142,8 @@ class Parser:
 
             tk_node = TokenNode(self.previous(), node)
             self.apply_class_options_to_node(tk_node)
-            # print("foot node", tk_node.node)
             # self.apply_style_to_node(tk_node)
+            self.apply_font_style_to_node(tk_node)
 
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
@@ -440,6 +159,8 @@ class Parser:
 
             tk_node = TokenNode(self.previous(), node)
             self.apply_style_to_node(tk_node)
+            self.apply_font_style_to_node(tk_node)
+
             self.apply_class_options_to_node(tk_node)
 
             for child in self.if_children_make_nodes():
@@ -473,15 +194,19 @@ class Parser:
                 case {"name": _ as name}:
                     node = LinkButton(name, properties=link_prop)
 
+            tk_node = TokenNode(self.previous(), node)
+            self.apply_style_to_node(tk_node)
+            self.apply_font_style_to_node(tk_node)
+
+
             for child in self.if_children_make_nodes():
                 if child_text := child.properties.get("text"):
-                    print("what about here?", child_text)
                     node.properties["text"] = child_text
 
             match node:
                 case LinkButtonExternal():
                     pass
-                case _:
+                case LinkButton():
                     # set up the connection, can probably be refactored
                     connection_path = f"{node.name}".replace("-", "_")
                     method_name = f"_{connection_path}_on_button_pressed"
@@ -518,6 +243,7 @@ class Parser:
             tk_node = TokenNode(self.previous(), node)
             self.apply_class_options_to_node(tk_node)
             self.apply_style_to_node(tk_node)
+            self.apply_font_style_to_node(tk_node)
 
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
@@ -530,6 +256,7 @@ class Parser:
             tk_node = TokenNode(self.previous(), node)
             self.apply_class_options_to_node(tk_node)
             self.apply_style_to_node(tk_node)
+            self.apply_font_style_to_node(tk_node)
 
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
@@ -539,10 +266,12 @@ class Parser:
         if self.match(TagCategory.H1):
             name = self.make_name_tag()
             node = make_rich_text_label(name, self.previous().str_val)
-
+            print("h1 node", node)
+            print("attrs", self.previous().attrs)
             tk_node = TokenNode(self.previous(), node)
             # self.apply_class_options_to_node(tk_node)
             self.apply_style_to_node(tk_node)
+            self.apply_font_style_to_node(tk_node)
 
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
@@ -560,6 +289,7 @@ class Parser:
             tk_node = TokenNode(self.previous(), node)
             # self.apply_class_options_to_node(tk_node)
             self.apply_style_to_node(tk_node)
+            self.apply_font_style_to_node(tk_node)
 
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
@@ -576,6 +306,7 @@ class Parser:
             tk_node = TokenNode(self.previous(), node)
             self.apply_class_options_to_node(tk_node)
             self.apply_style_to_node(tk_node)
+            self.apply_font_style_to_node(tk_node)
 
             unjoined = []
             for child in self.if_children_make_nodes():
@@ -609,6 +340,7 @@ class Parser:
             tk_node = TokenNode(self.previous(), node)
             self.apply_class_options_to_node(tk_node)
             self.apply_style_to_node(tk_node)
+            self.apply_font_style_to_node(tk_node)
 
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
@@ -655,8 +387,7 @@ class Parser:
                 "text": text,
             }
 
-            node = NodeGodot("text", type="Label", properties=properties)
-
+            node = Label("text", properties=properties)
             return node
 
         # for all the other classes we gotta support
@@ -780,9 +511,18 @@ class Parser:
     def apply_div_class_options(self, tk_node: TokenNode) -> None:
         match name := tk_node.node.name:
             case "flex-container-content" | "navbar__entries" | "navbar__entry":
-                tk_node.node = HBoxContainer(name)
+                properties = {
+                    "layout_mode": 2,
+                    "size_flags_vertical": 3,
+                }
+                tk_node.node = HBoxContainer(name, properties=properties)
             case "footer-wrap":
-                tk_node.node = VBoxContainer(name)
+                properties = {
+                    "layout_mode": 2,
+                    "size_flags_horizontal": 4,
+                    "size_flags_vertical": 0,
+                }
+                tk_node.node = VBoxContainer(name, properties=properties)
             case _:
                 properties = {
                     "layout_mode": 2,
@@ -792,43 +532,32 @@ class Parser:
                 tk_node.node = VBoxContainer(name, properties=properties)
 
     def apply_body_options(self, tk_node: TokenNode) -> None:
-        # tk_node.node.type = "VBoxContainer"
-
         properties = {
             "layout_mode": 2,
             "size_flags_horizontal": 3,
             "size_flags_vertical": 3,
         }
 
-        # tk_node.node.properties.update(properties)
         tk_node.node = VBoxContainer(tk_node.node.name, properties=properties)
 
     def apply_nav_options(self, tk_node: TokenNode) -> None:
-        # tk_node.node.type = "HBoxContainer"
-
         properties = {
             "layout_mode": 2,
             "size_flags_horizontal": 3,
             "size_flags_vertical": 3,
         }
 
-        # tk_node.node.properties.update(properties)
         tk_node.node = HBoxContainer(tk_node.node.name, properties=properties)
 
     def apply_footer_options(self, tk_node: TokenNode) -> None:
-        # tk_node.node.type = "HBoxContainer"
-
         properties = {
             "layout_mode": 2,
             "size_flags_horizontal": 4,
             "size_flags_vertical": 8,
         }
         tk_node.node = HBoxContainer(tk_node.node.name, properties=properties)
-        # tk_node.node.properties.update(properties)
 
     def apply_style_to_node(self, tk_node: TokenNode) -> None:
-        # tk_node.node.properties.update(properties)
-
         if style_dict := self.tag_style_to_dict(tk_node.token.attrs):
             match style_dict:
                 case {"display": "flex", "flex-direction": "column"}:
@@ -840,11 +569,26 @@ class Parser:
                 case _:
                     pass
 
+    def apply_font_style_to_node(self, tk_node: TokenNode) -> None:
+        if style_dict := self.tag_style_to_dict(tk_node.token.attrs):
+            # handle font type here
             match style_dict:
                 case {"font-family": font}:
                     font_res = FontFileGodot()
                     res = ExtResourceGodot(font_res, path=font_res.name)
                     attach_resource(tk_node.node, res)
+            
+            # print("what is our style_dict", style_dict)
+            match style_dict:
+                case {"font-size": fontsize}:
+                    match convert_css_value_to_godot(fontsize):
+                        # cheating since we have only px font sizes
+                        # case ("script", _ as val):
+                        #     frag = self.render_margin_fragment(k, val)
+                        #     fragments.extend(frag)
+                        #     del self.theme_properties[k]
+                        case ("int", _ as val):
+                            tk_node.node.theme_properties["font_size"] = val
 
     def tag_style_to_dict(self, tag):
         styled = {}
@@ -899,3 +643,41 @@ class Parser:
 
     def previous_n(self, n) -> Token:
         return self.tokens[self.current - n]
+    
+# this may be used in other css values than just padding
+def convert_css_value_to_godot(value) -> tuple:
+    if "px" in value:
+        return ("int", int(value[:-2]))
+    if "%" in value:
+        calc = int(value[:-1]) * 0.01
+        return ("int", calc)
+    if "vh" in value:
+        calc = int(value[:-2]) * 0.01
+        pad_str = f"{calc} * get_viewport().get_visible_rect().size.x"
+        return ("script", pad_str)
+    if "vw" in value:
+        calc = int(value[:-2]) * 0.01
+        pad_str = f"{calc} * get_viewport().get_visible_rect().size.y"
+        return ("script", pad_str)
+    if "auto" in value:
+        return ("str", "auto value")
+    if "rem" in value:
+        # rem is relative to size of root element font
+        # 1rem = the font size of the html element
+        # for now we will cheat and say it's 16px
+        multiplier = int(value[:-3])
+        fontsize = 16
+        calc = multiplier * fontsize
+        return ("int", calc)
+    if "em" in value:
+        # em is relative to font size of element
+        # 1em = whatever the size is, 2em = twice the size
+        # if no fontsize is defined, then default is 16px
+        # may need to figure out how to handle changes in fontsize later
+
+        multiplier = int(value[:-2])
+        fontsize = 16
+        calc = multiplier * fontsize
+        return ("int", calc)
+
+    return ("int", int(value))

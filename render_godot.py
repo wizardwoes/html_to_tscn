@@ -38,7 +38,6 @@ class SceneWriter:
         rendered = self.render_scene()
 
         outdir = Path(self.output_dir)
-        print("what is outdir", outdir)
         outdir.mkdir(exist_ok=True)
 
         print(f"Write it out to {self.out_fname}")

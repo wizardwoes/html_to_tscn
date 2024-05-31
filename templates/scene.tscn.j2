@@ -6,7 +6,7 @@
 
 {% macro render_node_theme_properties(properties) -%}
 {% for key, value in properties.items() %}
-theme_override_constants/{{ key }} = {{ value }}
+{{ key }} = {{ value }}
 {% endfor %}
 {%- endmacro %}
 

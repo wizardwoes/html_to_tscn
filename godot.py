@@ -187,18 +187,30 @@ class NodeGodot:
         # where we would prepend like
         # fstr = f"theme_override_constants/{k} = {s}"
         renderable = {}
+        val = None
         for k, v in self.theme_properties.items():
+            # handle formatting for value type
             match v:
                 case bool():
                     s = str(v).lower()
-                    renderable[k] = s
+                    val = s
                 case str():
-                    renderable[k] = f'"{v}"'
+                    val = f'"{v}"'
                 case None:
                     continue
                 case _:
-                    renderable[k] = str(v)
+                    val = str(v)
 
+            # handle formatting for theme property type
+            # this could probably be somewhere else?
+            match k:
+                case "margin_left" | "margin_right" | "margin_top" | "margin_bottom":
+                    override_name = f"theme_override_constants/{k}"
+                    renderable[override_name] = val
+                case "font_size":
+                    override_name = f"theme_override_font_sizes/{k}"
+                    renderable[override_name] = val
+            
         return renderable
 
     def _render_node_resources(self):
@@ -221,24 +233,11 @@ class NodeGodot:
 @dataclass
 class HBoxContainer(NodeGodot):
     type: str = "HBoxContainer"
-    _default_properties: dict = field(
-        default_factory=lambda: {
-            "layout_mode": 2,
-            "size_flags_vertical": 3,
-        }
-    )
 
 
 @dataclass
 class VBoxContainer(NodeGodot):
     type: str = "VBoxContainer"
-    _default_properties: dict = field(
-        default_factory=lambda: {
-            "layout_mode": 2,
-            "size_flags_horizontal": 4,
-            "size_flags_vertical": 0,
-        }
-    )
 
 
 @dataclass
@@ -247,13 +246,24 @@ class RichTextLabel(NodeGodot):
 
 
 @dataclass
+class Label(NodeGodot):
+    type: str = "Label"
+
+
+@dataclass
 class LinkButton(NodeGodot):
     type: str = "LinkButton"
-
+    theme_properties: dict = field(
+        default_factory=lambda: {
+            "font_size": None,
+            "font": None
+        }
+    )
 
 @dataclass
 class LinkButtonExternal(NodeGodot):
     type: str = "LinkButton"
+    
 
 
 @dataclass
@@ -267,6 +277,230 @@ class TextureRect(NodeGodot):
             "stretch_mode": 4,
         }
     )
+
+
+@dataclass
+class MarginContainer(NodeGodot):
+    type: str = "MarginContainer"
+    theme_properties: dict = field(
+        default_factory=lambda: {
+            "margin_left": None,
+            "margin_top": None,
+            "margin_right": None,
+            "margin_bottom": None,
+        }
+    )
+
+    def __post_init__(self):
+        # just going to cheat and handle padding and margins the exact same way
+        # need to find cases where an element has both of these though
+
+        self._map_margin_values()
+        self._map_padding_values()
+
+        self.update_margins()
+
+        self.properties.update(
+            {
+                "layout_mode": 2,
+                "size_flags_horizontal": 3,
+                "size_flags_vertical": 3,
+            }
+        )
+
+    def _map_margin_values(self) -> dict:
+        # this function basically handles the formatting of the two margins
+        # case where margin is defined as something like
+        # margin: 25px 50px 75px 100px;
+        if pval := self.properties.get("margin"):
+            match pval.split(" "):
+                case [all_pad]:
+                    # change this later
+                    for k, v in self.theme_properties.items():
+                        self.theme_properties[k] = all_pad
+
+                case [top_bottom, left_right]:
+                    for k in [
+                        "margin_left",
+                        "margin_right",
+                    ]:
+                        self.theme_properties[k] = left_right
+
+                    for k in [
+                        "margin_top",
+                        "margin_bottom",
+                    ]:
+                        self.theme_properties[k] = top_bottom
+
+                case [top, left_right, bottom]:
+                    for k in [
+                        "margin_left",
+                        "margin_right",
+                    ]:
+                        self.theme_properties[k] = left_right
+
+                    self.theme_properties["margin_top"] = top
+                    self.theme_properties["margin_bottom"] = bottom
+
+                case [top, right, bottom, left]:
+                    self.theme_properties["margin_left"] = left
+                    self.theme_properties["margin_top"] = top
+                    self.theme_properties["margin_right"] = right
+                    self.theme_properties["margin_bottom"] = bottom
+
+            del self.properties["margin"]
+
+        # case where we use one of the 4 margin-*
+        # check if property is in our map
+        # put it in our dict if it is
+        # more specific so overrides whatever our margin is
+
+        if pval := self.properties.get("margin-top"):
+            self.theme_properties["margin_top"] = pval
+            del self.properties["margin-top"]
+
+        if pval := self.properties.get("margin-bottom"):
+            self.theme_properties["margin_bottom"] = pval
+            del self.properties["margin-bottom"]
+
+        if pval := self.properties.get("margin-right"):
+            self.theme_properties["margin_right"] = pval
+            del self.properties["margin-right"]
+
+        if pval := self.properties.get("margin-left"):
+            self.theme_properties["margin_left"] = pval
+            del self.properties["margin-left"]
+
+    def _map_padding_values(self) -> dict:
+        # this function basically handles the formatting of the two padding cases
+        # case where padding is defined as something like
+        # padding: 25px 50px 75px 100px;
+        if pval := self.properties.get("padding"):
+            match pval.split(" "):
+                case [all_pad]:
+                    # change this later
+                    for k, v in self.theme_properties.items():
+                        self.theme_properties[k] = all_pad
+
+                case [top_bottom, left_right]:
+                    for k in [
+                        "margin_left",
+                        "margin_right",
+                    ]:
+                        self.theme_properties[k] = left_right
+
+                    for k in [
+                        "margin_top",
+                        "margin_bottom",
+                    ]:
+                        self.theme_properties[k] = top_bottom
+
+                case [top, left_right, bottom]:
+                    for k in [
+                        "margin_left",
+                        "margin_right",
+                    ]:
+                        self.theme_properties[k] = left_right
+
+                    self.theme_properties["margin_top"] = top
+                    self.theme_properties["margin_bottom"] = bottom
+
+                case [top, right, bottom, left]:
+                    self.theme_properties["margin_left"] = left
+                    self.theme_properties["margin_top"] = top
+                    self.theme_properties["margin_right"] = right
+                    self.theme_properties["margin_bottom"] = bottom
+
+            del self.properties["padding"]
+
+        # case where we use one of the 4 padding-*
+        # check if property is in our map
+        # put it in our dict if it is
+        # more specific so overrides whatever our padding is
+
+        if pval := self.properties.get("padding-top"):
+            self.theme_properties["margin_top"] = pval
+            del self.properties["padding-top"]
+
+        if pval := self.properties.get("padding-bottom"):
+            self.theme_properties["margin_bottom"] = pval
+            del self.properties["padding-bottom"]
+
+        if pval := self.properties.get("padding-right"):
+            self.theme_properties["margin_right"] = pval
+            del self.properties["padding-right"]
+
+        if pval := self.properties.get("padding-left"):
+            self.theme_properties["margin_left"] = pval
+            del self.properties["padding-left"]
+
+    def update_margins(self) -> None:
+        # side effect heavy
+        # do i need to calculate the sizes / create this script at this point in time?
+        fragments = []
+        # this feels hacky
+        keys = list(self.theme_properties.keys())
+        for k in keys:
+            if v := self.theme_properties.get(k):
+                match self.convert_css_value_to_godot(v):
+                    case ("script", _ as val):
+                        frag = self.render_margin_fragment(k, val)
+                        fragments.extend(frag)
+                        del self.theme_properties[k]
+                    case ("int", _ as val):
+                        self.theme_properties[k] = val
+
+        if fragments:
+            # make our ready script
+            func = ScriptFunction("_ready", fragments)
+            script = GDScriptResource(source=self.type)
+            script.add_function(func)
+
+            self.add_script(script)
+
+    # this may be used in other css values than just padding
+    def convert_css_value_to_godot(self, value) -> tuple:
+        if "px" in value:
+            return ("int", int(value[:-2]))
+        if "%" in value:
+            calc = int(value[:-1]) * 0.01
+            return ("int", calc)
+        if "vh" in value:
+            calc = int(value[:-2]) * 0.01
+            pad_str = f"{calc} * get_viewport().get_visible_rect().size.x"
+            return ("script", pad_str)
+        if "vw" in value:
+            calc = int(value[:-2]) * 0.01
+            pad_str = f"{calc} * get_viewport().get_visible_rect().size.y"
+            return ("script", pad_str)
+        if "auto" in value:
+            return ("str", "auto value")
+        if "rem" in value:
+            # rem is relative to size of root element font
+            # 1rem = the font size of the html element
+            # for now we will cheat and say it's 16px
+            multiplier = int(value[:-3])
+            fontsize = 16
+            calc = multiplier * fontsize
+            return ("int", calc)
+        if "em" in value:
+            # em is relative to font size of element
+            # 1em = whatever the size is, 2em = twice the size
+            # if no fontsize is defined, then default is 16px
+            # may need to figure out how to handle changes in fontsize later
+
+            multiplier = int(value[:-2])
+            fontsize = 16
+            calc = multiplier * fontsize
+            return ("int", calc)
+
+        return ("int", int(value))
+
+    def render_margin_fragment(self, margin_dir, margin_val):
+        define_str = f"var {margin_dir} = {margin_val}"
+        add_theme_str = f'add_theme_constant_override("{margin_dir}", {margin_dir})'
+
+        return [define_str, add_theme_str]
 
 
 @dataclass
