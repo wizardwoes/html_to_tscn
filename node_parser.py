@@ -161,9 +161,9 @@ class Parser:
 
             self.style_ctx.pop()
 
-            # if margin := self.margin_node(tk_node):
-            #     margin.add_child(tk_node.node)
-            #     return margin
+            if margin := self.margin_node(tk_node):
+                margin.add_child(tk_node.node)
+                return margin
 
             return tk_node.node
 
@@ -254,6 +254,10 @@ class Parser:
                             script.add_function(f)
 
                         root.add_script(script)
+
+            if margin := self.margin_node(tk_node):
+                margin.add_child(tk_node.node)
+                return margin
 
             return node
 
@@ -429,8 +433,6 @@ class Parser:
 
             self.apply_font_style_to_node(tk_node)
 
-            print("current style ctx", tk_node.node.name, self.style_ctx)
-
             return node
 
         # for all the other classes we gotta support
@@ -559,6 +561,13 @@ class Parser:
                     "size_flags_vertical": 3,
                 }
                 tk_node.node = HBoxContainer(name, properties=properties)
+            case "next-prev-wrap":
+                properties = {
+                    "layout_mode": 2,
+                    "size_flags_horizontal": 4,
+                    "size_flags_vertical": 3,
+                }
+                tk_node.node = HBoxContainer(name, properties=properties)
             case "footer-wrap":
                 properties = {
                     "layout_mode": 2,
@@ -575,9 +584,10 @@ class Parser:
                 tk_node.node = VBoxContainer(name, properties=properties)
 
     def apply_body_options(self, tk_node: TokenNode) -> None:
+        # horizontal = shrink center
         properties = {
             "layout_mode": 2,
-            "size_flags_horizontal": 3,
+            "size_flags_horizontal": 6,
             "size_flags_vertical": 3,
         }
 
@@ -587,7 +597,7 @@ class Parser:
         properties = {
             "layout_mode": 2,
             "size_flags_horizontal": 3,
-            "size_flags_vertical": 3,
+            # "size_flags_vertical": 3,
         }
 
         tk_node.node = HBoxContainer(tk_node.node.name, properties=properties)
