@@ -274,6 +274,14 @@ class LinkButton(NodeGodot):
         }
     )
 
+    def __post_init__(self):
+        # hack for our homepage link class/id being empty
+        if self.name == "":
+            self.name = "home-page"
+            self.properties["text"] = "wizard woes"
+            self.properties["link_path"] = "home/"
+            self.properties["link_name"] = "home"
+    
     def apply_font_size(self, size):
         self.theme_properties["font_size"] = size
 

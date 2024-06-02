@@ -191,24 +191,16 @@ class Parser:
 
         if self.match(TagCategory.A):
             # need to handle if an internal link vs a real external link
-
             link_attrs = self.link_attributes()
-
             link_prop = {"unique_name_in_owner": True, "size_flags_horizontal": 0}
-            # this could be done better
-            match link_attrs:
+            link_prop.update(link_attrs)
+
+            match link_prop:
                 case {"uri": _ as uri}:
-                    link_prop["uri"] = uri
                     node = LinkButtonExternal("link", properties=link_prop)
-                case {"name": "", "link_name": _ as link_name}:
-                    # hacky way to handle our home page link
-                    # sure this won't bite me in the ass later
-                    if link_name == "":
-                        link_name = "home-page"
-                        link_prop["text"] = "wizard woes"
+                case {"link_name": _ as link_name}:
+                    # del link_name["name"]
                     node = LinkButton(link_name, properties=link_prop)
-                case {"name": _ as name}:
-                    node = LinkButton(name, properties=link_prop)
 
             tk_node = TokenNode(self.previous(), node)
 
@@ -223,6 +215,9 @@ class Parser:
 
             self.style_ctx.pop()
 
+            # set up the script fragments
+            # Not sure if this is the right place for it
+            # but not sure where else would be better
             match node:
                 case LinkButtonExternal():
                     pass
@@ -238,10 +233,10 @@ class Parser:
                     )
 
                     # make our function that we call script
-                    path_to_node = link_attrs["link_path"] + link_attrs["link_name"]
-                    # hack for our homepage link class/id being empty
-                    if path_to_node == "":
-                        path_to_node = "home/home"
+                    path_to_node = (
+                        tk_node.node.properties["link_path"]
+                        + tk_node.node.properties["link_name"]
+                    )
 
                     fragment = on_link_button_pressed_func(method_name, path_to_node)
                     # shoe-horn in our signal emitter
@@ -446,9 +441,12 @@ class Parser:
         return node
 
     def link_attributes(self):
-        name = ""
-        if prev_name := self.previous().attrs.get("title"):
-            name = prev_name.replace(" ", "-")
+        # will need to figure out if we actually need the name or not
+
+        # name = ""
+        # # use title attribute to set name
+        # if prev_name := self.previous().attrs.get("title"):
+        #     name = prev_name.replace(" ", "-")
 
         uri = self.previous().attrs.get("href")
         parsed_uri = urlparse(uri)
@@ -456,10 +454,17 @@ class Parser:
             case "wizardwoes.online" | "":
                 link_name = parsed_uri.path.split("/")[-2]
                 link_path = parsed_uri.path[1:]
-                return {"name": name, "link_name": link_name, "link_path": link_path}
+                # return {"name": name, "link_name": link_name, "link_path": link_path}
+                return {"link_name": link_name, "link_path": link_path}
+
             case _:
+                # return {
+                #     "name": name,
+                #     "uri": uri,
+                #     "link_name": "idk",
+                #     "link_path": "linmk path",
+                # }
                 return {
-                    "name": name,
                     "uri": uri,
                     "link_name": "idk",
                     "link_path": "linmk path",
