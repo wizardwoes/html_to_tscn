@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from urllib.parse import urlparse
+from functools import singledispatch
 
 from godot import (
     ExtResourceGodot,
@@ -78,6 +79,7 @@ class Parser:
         self.tokens = tokens
         self.current = 0
         self.root_node = root_node
+        self.style_ctx = []
 
     def parse(self) -> list[NodeGodot]:
         nodes = []
@@ -93,6 +95,7 @@ class Parser:
             node = self.basic_node()
 
             tk_node = TokenNode(self.previous(), node)
+
             self.apply_class_options_to_node(tk_node)
             self.apply_style_to_node(tk_node)
             self.apply_font_style_to_node(tk_node)
@@ -106,12 +109,17 @@ class Parser:
             node = self.basic_node()
 
             tk_node = TokenNode(self.previous(), node)
+
             self.apply_class_options_to_node(tk_node)
             self.apply_style_to_node(tk_node)
             self.apply_font_style_to_node(tk_node)
 
+            self.style_ctx.append(self.tag_style_to_dict(tk_node.token.attrs))
+
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
+
+            self.style_ctx.pop()
 
             # if margin := self.margin_node(tk_node):
             #     margin.add_child(tk_node.node)
@@ -141,12 +149,17 @@ class Parser:
             node = self.basic_node()
 
             tk_node = TokenNode(self.previous(), node)
+
             self.apply_class_options_to_node(tk_node)
             # self.apply_style_to_node(tk_node)
             self.apply_font_style_to_node(tk_node)
 
+            self.style_ctx.append(self.tag_style_to_dict(tk_node.token.attrs))
+
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
+
+            self.style_ctx.pop()
 
             # if margin := self.margin_node(tk_node):
             #     margin.add_child(tk_node.node)
@@ -158,19 +171,22 @@ class Parser:
             node = self.basic_node()
 
             tk_node = TokenNode(self.previous(), node)
+
             self.apply_style_to_node(tk_node)
             self.apply_font_style_to_node(tk_node)
-
             self.apply_class_options_to_node(tk_node)
+
+            self.style_ctx.append(self.tag_style_to_dict(tk_node.token.attrs))
 
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
+
+            self.style_ctx.pop()
 
             if margin := self.margin_node(tk_node):
                 margin.add_child(tk_node.node)
                 return margin
 
-            # tk_node.node.name = self.handle_tag_name()
             return tk_node.node
 
         if self.match(TagCategory.A):
@@ -195,13 +211,17 @@ class Parser:
                     node = LinkButton(name, properties=link_prop)
 
             tk_node = TokenNode(self.previous(), node)
+
             self.apply_style_to_node(tk_node)
             self.apply_font_style_to_node(tk_node)
 
+            self.style_ctx.append(self.tag_style_to_dict(tk_node.token.attrs))
 
             for child in self.if_children_make_nodes():
                 if child_text := child.properties.get("text"):
                     node.properties["text"] = child_text
+
+            self.style_ctx.pop()
 
             match node:
                 case LinkButtonExternal():
@@ -245,8 +265,12 @@ class Parser:
             self.apply_style_to_node(tk_node)
             self.apply_font_style_to_node(tk_node)
 
+            self.style_ctx.append(self.tag_style_to_dict(tk_node.token.attrs))
+
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
+
+            self.style_ctx.pop()
 
             return tk_node.node
 
@@ -258,23 +282,29 @@ class Parser:
             self.apply_style_to_node(tk_node)
             self.apply_font_style_to_node(tk_node)
 
+            self.style_ctx.append(self.tag_style_to_dict(tk_node.token.attrs))
+
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
+
+            self.style_ctx.pop()
 
             return tk_node.node
 
         if self.match(TagCategory.H1):
             name = self.make_name_tag()
             node = make_rich_text_label(name, self.previous().str_val)
-            print("h1 node", node)
-            print("attrs", self.previous().attrs)
             tk_node = TokenNode(self.previous(), node)
             # self.apply_class_options_to_node(tk_node)
             self.apply_style_to_node(tk_node)
             self.apply_font_style_to_node(tk_node)
 
+            self.style_ctx.append(self.tag_style_to_dict(tk_node.token.attrs))
+
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
+
+            self.style_ctx.pop()
 
             if margin := self.margin_node(tk_node):
                 margin.add_child(tk_node.node)
@@ -291,8 +321,12 @@ class Parser:
             self.apply_style_to_node(tk_node)
             self.apply_font_style_to_node(tk_node)
 
+            self.style_ctx.append(self.tag_style_to_dict(tk_node.token.attrs))
+
             for child in self.if_children_make_nodes():
                 tk_node.node.add_child(child)
+
+            self.style_ctx.pop()
 
             if margin := self.margin_node(tk_node):
                 margin.add_child(tk_node.node)
@@ -329,6 +363,8 @@ class Parser:
             if unjoined:
                 child_text = " ".join(unjoined)
                 child = make_rich_text_label("text", child_text)
+                temp_node = TokenNode(self.previous(), child)
+                self.apply_font_style_to_node(temp_node)
                 tk_node.node.add_child(child)
 
             return tk_node.node
@@ -378,6 +414,7 @@ class Parser:
 
         if self.match(TagCategory.TEXT):
             text = self.previous().str_val
+
             # rich text label issues zzzz
             # node = make_rich_text_label("text", text)
             properties = {
@@ -388,6 +425,12 @@ class Parser:
             }
 
             node = Label("text", properties=properties)
+            tk_node = TokenNode(self.previous(), node)
+
+            self.apply_font_style_to_node(tk_node)
+
+            print("current style ctx", tk_node.node.name, self.style_ctx)
+
             return node
 
         # for all the other classes we gotta support
@@ -570,15 +613,18 @@ class Parser:
                     pass
 
     def apply_font_style_to_node(self, tk_node: TokenNode) -> None:
-        if style_dict := self.tag_style_to_dict(tk_node.token.attrs):
+        try:
+            style_dict = self.style_ctx[-1]
+            style_dict.update(self.tag_style_to_dict(tk_node.token.attrs))
+        except IndexError:
+            style_dict = self.tag_style_to_dict(tk_node.token.attrs)
+
+        if style_dict:
             # handle font type here
             match style_dict:
                 case {"font-family": font}:
-                    font_res = FontFileGodot()
-                    res = ExtResourceGodot(font_res, path=font_res.name)
-                    attach_resource(tk_node.node, res)
-            
-            # print("what is our style_dict", style_dict)
+                    tk_node.node.apply_font_family(font)
+
             match style_dict:
                 case {"font-size": fontsize}:
                     match convert_css_value_to_godot(fontsize):
@@ -588,7 +634,7 @@ class Parser:
                         #     fragments.extend(frag)
                         #     del self.theme_properties[k]
                         case ("int", _ as val):
-                            tk_node.node.theme_properties["font_size"] = val
+                            tk_node.node.apply_font_size(val)
 
     def tag_style_to_dict(self, tag):
         styled = {}
@@ -643,7 +689,8 @@ class Parser:
 
     def previous_n(self, n) -> Token:
         return self.tokens[self.current - n]
-    
+
+
 # this may be used in other css values than just padding
 def convert_css_value_to_godot(value) -> tuple:
     if "px" in value:

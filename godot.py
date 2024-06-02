@@ -207,7 +207,7 @@ class NodeGodot:
                 case "margin_left" | "margin_right" | "margin_top" | "margin_bottom":
                     override_name = f"theme_override_constants/{k}"
                     renderable[override_name] = val
-                case "font_size":
+                case "font_size" | "normal_font_size":
                     override_name = f"theme_override_font_sizes/{k}"
                     renderable[override_name] = val
             
@@ -228,6 +228,15 @@ class NodeGodot:
         fstr = f"{self.script.resource.as_property_field()} = {ext_res_id}"
 
         return fstr + "\n"
+    
+    def apply_font_family(self, font):
+        font_res = FontFileGodot()
+        res = ExtResourceGodot(font_res, path=font_res.name)
+        res.path = self.name
+        self.resources.append(res)
+
+    def apply_font_size(self, size):
+        pass
 
 
 @dataclass
@@ -244,11 +253,16 @@ class VBoxContainer(NodeGodot):
 class RichTextLabel(NodeGodot):
     type: str = "RichTextLabel"
 
+    def apply_font_size(self, size):
+        self.theme_properties["normal_font_size"] = size
+
 
 @dataclass
 class Label(NodeGodot):
     type: str = "Label"
 
+    def apply_font_size(self, size):
+        self.theme_properties["font_size"] = size
 
 @dataclass
 class LinkButton(NodeGodot):
@@ -259,6 +273,9 @@ class LinkButton(NodeGodot):
             "font": None
         }
     )
+
+    def apply_font_size(self, size):
+        self.theme_properties["font_size"] = size
 
 @dataclass
 class LinkButtonExternal(NodeGodot):

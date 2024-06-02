@@ -2,7 +2,7 @@ Get-ChildItem -Recurse -Path .\src_html\glas\* -Include index.html | ForEach-Obj
 	& C:/Users/choosegoose/.virtualenvs/html_to_tscn-UVkTTcz6/Scripts/python.exe c:/code/html_to_tscn/page_content.py --src $_.FullName
 }
 
-# Get-ChildItem -Recurse -Path .\src_html\glas\page-87\* -Include index.html | ForEach-Object { 
+# Get-ChildItem -Recurse -Path .\src_html\glas\page-42\* -Include index.html | ForEach-Object { 
 #     & C:/Users/choosegoose/.virtualenvs/html_to_tscn-UVkTTcz6/Scripts/python.exe c:/code/html_to_tscn/page_content.py --src $_.FullName
 # }
 
